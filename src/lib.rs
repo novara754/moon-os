@@ -4,10 +4,12 @@
 
 mod serial;
 mod terminal;
+mod video;
 
 use stivale_boot::v2::{
     StivaleFramebufferHeaderTag, StivaleHeader, StivaleStruct, StivaleTerminalHeaderTag,
 };
+use video::{ColorRGB, Framebuffer, FRAMEBUFFER};
 
 extern "C" {
     static KERNEL_STACK_TOP: u8;
@@ -34,7 +36,26 @@ pub extern "C" fn kernel_main(stivale_struct: &'static StivaleStruct) -> ! {
         STIVALE_STRUCT = Some(stivale_struct);
     }
 
-    assert!(false, "BAADD!");
+    {
+        let mut framebuffer = FRAMEBUFFER.lock();
+        let Framebuffer { width, height, .. } = *framebuffer;
+
+        framebuffer.draw_rect(0, 0, width, height, ColorRGB(255, 0, 0));
+        framebuffer.draw_rect(
+            width / 4,
+            height / 4,
+            width / 4,
+            height / 2,
+            ColorRGB(0, 0, 150),
+        );
+        framebuffer.draw_rect(
+            width / 2,
+            height / 4,
+            width / 4,
+            height / 2,
+            ColorRGB(0, 200, 0),
+        );
+    }
 
     loop {
         unsafe { core::arch::asm!("hlt") }
