@@ -1,6 +1,5 @@
 #![no_std]
 #![no_main]
-#![feature(bench_black_box)]
 
 mod serial;
 mod terminal;
@@ -9,7 +8,6 @@ mod video;
 use stivale_boot::v2::{
     StivaleFramebufferHeaderTag, StivaleHeader, StivaleStruct, StivaleTerminalHeaderTag,
 };
-use video::{ColorRGB, Framebuffer, FRAMEBUFFER};
 
 extern "C" {
     static KERNEL_STACK_TOP: u8;
@@ -36,26 +34,7 @@ pub extern "C" fn kernel_main(stivale_struct: &'static StivaleStruct) -> ! {
         STIVALE_STRUCT = Some(stivale_struct);
     }
 
-    {
-        let mut framebuffer = FRAMEBUFFER.lock();
-        let Framebuffer { width, height, .. } = *framebuffer;
-
-        framebuffer.draw_rect(0, 0, width, height, ColorRGB(255, 0, 0));
-        framebuffer.draw_rect(
-            width / 4,
-            height / 4,
-            width / 4,
-            height / 2,
-            ColorRGB(0, 0, 150),
-        );
-        framebuffer.draw_rect(
-            width / 2,
-            height / 4,
-            width / 4,
-            height / 2,
-            ColorRGB(0, 200, 0),
-        );
-    }
+    kprint!("Hello to both the terminal and serial out!");
 
     loop {
         unsafe { core::arch::asm!("hlt") }
@@ -64,10 +43,23 @@ pub extern "C" fn kernel_main(stivale_struct: &'static StivaleStruct) -> ! {
 
 #[panic_handler]
 fn panic(info: &core::panic::PanicInfo) -> ! {
-    println!("{}", info);
-    serial_println!("{}", info);
+    kprintln!("{}", info);
 
     loop {
         unsafe { core::arch::asm!("hlt") }
     }
+}
+
+#[macro_export]
+macro_rules! kprint {
+    ($($arg:tt)*) => {{
+        $crate::terminal::_print(format_args!($($arg)*));
+        $crate::serial::_print(format_args!($($arg)*));
+    }};
+}
+
+#[macro_export]
+macro_rules! kprintln {
+    () => ($crate::kprint!("\n"));
+    ($($arg:tt)*) => ($crate::kprint!("{}\n", format_args!($($arg)*)));
 }
