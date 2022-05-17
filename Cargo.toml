@@ -1,0 +1,21 @@
+[package]
+name = "moon_os"
+description = "MoonOS: A 64-bit x86 toy operating system."
+authors = ["vzwGrey <vzwgrey@gmail.com>"]
+license-file = "LICENSE"
+readme = "README.md"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["staticlib"]
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"
+
+[dependencies]
+stivale-boot = "0.2.1"

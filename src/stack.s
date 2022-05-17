@@ -1,0 +1,7 @@
+section .data
+global KERNEL_STACK_TOP
+global KERNEL_STACK_BOTTOM
+align 16
+KERNEL_STACK_BOTTOM:
+  times 4096 db 0
+KERNEL_STACK_TOP:
