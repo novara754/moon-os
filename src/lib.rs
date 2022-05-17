@@ -2,6 +2,7 @@
 #![no_main]
 #![feature(bench_black_box)]
 
+mod serial;
 mod terminal;
 
 use stivale_boot::v2::{
@@ -33,13 +34,18 @@ pub extern "C" fn kernel_main(stivale_struct: &'static StivaleStruct) -> ! {
         STIVALE_STRUCT = Some(stivale_struct);
     }
 
+    assert!(false, "BAADD!");
+
     loop {
         unsafe { core::arch::asm!("hlt") }
     }
 }
 
 #[panic_handler]
-fn panic(_info: &core::panic::PanicInfo) -> ! {
+fn panic(info: &core::panic::PanicInfo) -> ! {
+    println!("{}", info);
+    serial_println!("{}", info);
+
     loop {
         unsafe { core::arch::asm!("hlt") }
     }
