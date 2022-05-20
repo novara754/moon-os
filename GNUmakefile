@@ -1,28 +1,30 @@
 QEMU_ARGS=-M q35 -m 2G -boot d -serial stdio -no-reboot  #-S -s
 KERNEL_LIB=target/x86_64-moon_os/debug/libmoon_os.a
 KERNEL=target/x86_64-moon_os/debug/moon_os
+ISO=moon_os.iso
+HDD=moon_os.hdd
 
 .PHONY: all
-all: barebones.iso
+all: $(ISO)
 
 .PHONY: all-hdd
-all-hdd: barebones.hdd
+all-hdd: $(HDD)
 
 .PHONY: run
-run: barebones.iso
-	qemu-system-x86_64 $(QEMU_ARGS) -cdrom barebones.iso
+run: $(ISO)
+	qemu-system-x86_64 $(QEMU_ARGS) -cdrom $(ISO)
 
 .PHONY: run-uefi
-run-uefi: ovmf-x64 barebones.iso
-	qemu-system-x86_64 $(QEMU_ARGS) -bios ovmf-x64/OVMF.fd -cdrom barebones.iso
+run-uefi: ovmf-x64 $(ISO)
+	qemu-system-x86_64 $(QEMU_ARGS) -bios ovmf-x64/OVMF.fd -cdrom $(ISO)
 
 .PHONY: run-hdd
-run-hdd: barebones.hdd
-	qemu-system-x86_64 $(QEMU_ARGS) -hda barebones.hdd
+run-hdd: $(HDD)
+	qemu-system-x86_64 $(QEMU_ARGS) -hda $(HDD)
 
 .PHONY: run-hdd-uefi
-run-hdd-uefi: ovmf-x64 barebones.hdd
-	qemu-system-x86_64 $(QEMU_ARGS) -bios ovmf-x64/OVMF.fd -hda barebones.hdd
+run-hdd-uefi: ovmf-x64 $(HDD)
+	qemu-system-x86_64 $(QEMU_ARGS) -bios ovmf-x64/OVMF.fd -hda $(HDD)
 
 ovmf-x64:
 	mkdir -p ovmf-x64
@@ -45,7 +47,7 @@ kernel:
 		$(KERNEL_LIB) \
 		src/stack.o
 
-barebones.iso: limine kernel
+$(ISO): limine kernel
 	rm -rf iso_root
 	mkdir -p iso_root
 	cp $(KERNEL) \
@@ -54,18 +56,18 @@ barebones.iso: limine kernel
 		-no-emul-boot -boot-load-size 4 -boot-info-table \
 		--efi-boot limine-cd-efi.bin \
 		-efi-boot-part --efi-boot-image --protective-msdos-label \
-		iso_root -o barebones.iso
-	limine/limine-deploy barebones.iso
+		iso_root -o $(ISO)
+	limine/limine-deploy $(ISO)
 	rm -rf iso_root
 
-barebones.hdd: limine kernel
-	rm -f barebones.hdd
-	dd if=/dev/zero bs=1M count=0 seek=64 of=barebones.hdd
-	parted -s barebones.hdd mklabel gpt
-	parted -s barebones.hdd mkpart ESP fat32 2048s 100%
-	parted -s barebones.hdd set 1 esp on
-	limine/limine-deploy barebones.hdd
-	sudo losetup -Pf --show barebones.hdd >loopback_dev
+$(HDD): limine kernel
+	rm -f $(HDD)
+	dd if=/dev/zero bs=1M count=0 seek=64 of=$(HDD)
+	parted -s $(HDD) mklabel gpt
+	parted -s $(HDD) mkpart ESP fat32 2048s 100%
+	parted -s $(HDD) set 1 esp on
+	limine/limine-deploy $(HDD)
+	sudo losetup -Pf --show $(HDD) >loopback_dev
 	sudo mkfs.fat -F 32 `cat loopback_dev`p1
 	mkdir -p img_mount
 	sudo mount `cat loopback_dev`p1 img_mount
@@ -79,7 +81,7 @@ barebones.hdd: limine kernel
 
 .PHONY: clean
 clean:
-	rm -rf iso_root barebones.iso barebones.hdd src/stack.o
+	rm -rf iso_root $(ISO) $(HDD) src/stack.o
 	cargo clean
 
 .PHONY: distclean
