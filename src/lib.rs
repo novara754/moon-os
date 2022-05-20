@@ -1,22 +1,22 @@
 #![no_std]
 #![no_main]
+#![feature(abi_x86_interrupt)]
 
+mod gdt;
+mod idt;
 mod serial;
-mod terminal;
 mod video;
 
-use stivale_boot::v2::{
-    StivaleFramebufferHeaderTag, StivaleHeader, StivaleStruct, StivaleTerminalHeaderTag,
-};
+use stivale_boot::v2::{StivaleFramebufferHeaderTag, StivaleHeader, StivaleStruct};
+
+use crate::video::{ColorRGB, FRAMEBUFFER};
 
 extern "C" {
     static KERNEL_STACK_TOP: u8;
 }
 
-static TERMINAL_TAG: StivaleTerminalHeaderTag = StivaleTerminalHeaderTag::new();
-static FRAMEBUFFER_TAG: StivaleFramebufferHeaderTag = StivaleFramebufferHeaderTag::new()
-    .framebuffer_bpp(24)
-    .next((&TERMINAL_TAG as *const StivaleTerminalHeaderTag).cast());
+static FRAMEBUFFER_TAG: StivaleFramebufferHeaderTag =
+    StivaleFramebufferHeaderTag::new().framebuffer_bpp(24);
 
 #[link_section = ".stivale2hdr"]
 #[no_mangle]
@@ -34,7 +34,26 @@ pub extern "C" fn kernel_main(stivale_struct: &'static StivaleStruct) -> ! {
         STIVALE_STRUCT = Some(stivale_struct);
     }
 
-    kprint!("Hello to both the terminal and serial out!");
+    kprint!("[KERNEL] Initializing GDT...");
+    gdt::init();
+    kprintln!("OK");
+
+    kprint!("[KERNEL] Initializing IDT...");
+    idt::init();
+    kprintln!("OK");
+
+    /* Placeholder code just to see if we get here. */
+    {
+        let mut framebuffer = FRAMEBUFFER.lock();
+        for y in 0..framebuffer.height {
+            for x in 0..framebuffer.width {
+                let r = x * 255 / framebuffer.width;
+                let g = y * 255 / framebuffer.height;
+                framebuffer.put_pixel(x, y, ColorRGB(r as u8, g as u8, 200));
+            }
+        }
+    }
+    /* --- */
 
     loop {
         unsafe { core::arch::asm!("hlt") }
@@ -53,7 +72,6 @@ fn panic(info: &core::panic::PanicInfo) -> ! {
 #[macro_export]
 macro_rules! kprint {
     ($($arg:tt)*) => {{
-        $crate::terminal::_print(format_args!($($arg)*));
         $crate::serial::_print(format_args!($($arg)*));
     }};
 }
