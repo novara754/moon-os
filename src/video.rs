@@ -46,7 +46,7 @@ impl Framebuffer {
     }
 
     pub fn put_pixel(&mut self, x: usize, y: usize, color: ColorRGB) {
-        assert_eq!(self.bytes_per_pixel, 4, "framebuffer bpp is not 24");
+        assert_eq!(self.bytes_per_pixel, 4, "framebuffer bpp is not 32");
 
         let pixel_idx = y * self.width + x;
         let byte_idx = pixel_idx * self.bytes_per_pixel;
