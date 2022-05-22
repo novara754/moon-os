@@ -61,30 +61,3 @@ impl Framebuffer {
         }
     }
 }
-
-// let framebuffer = stivale_struct.framebuffer().unwrap();
-// println!("framebuffer_addr: {:X}", framebuffer.framebuffer_addr);
-// println!("framebuffer_width: {}", framebuffer.framebuffer_width);
-// println!("framebuffer_height: {}", framebuffer.framebuffer_height);
-// println!("framebuffer_pitch: {}", framebuffer.framebuffer_pitch);
-// println!("framebuffer_bpp: {}", framebuffer.framebuffer_bpp);
-// println!("memory_model: {}", framebuffer.memory_model);
-
-// let video_buffer = unsafe {
-//     core::slice::from_raw_parts_mut(
-//         framebuffer.framebuffer_addr as *mut u8,
-//         framebuffer.framebuffer_pitch as usize * framebuffer.framebuffer_height as usize,
-//     )
-// };
-
-// for y in 100..355 {
-//     for x in 100..355 {
-//         let i = y * framebuffer.framebuffer_width as usize + x;
-//         video_buffer[i * 4 + 0] = (y - 100) as u8;
-//         video_buffer[i * 4 + 1] = (x - 100) as u8;
-//         video_buffer[i * 4 + 2] = 200;
-//         video_buffer[i * 4 + 3] = 255;
-
-//         // println!("{:X?}", &video_buffer[(i * 4)..(i * 4 + 4)])
-//     }
-// }
