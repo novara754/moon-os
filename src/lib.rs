@@ -4,12 +4,14 @@
 
 mod gdt;
 mod interrupts;
+mod psf;
 mod serial;
+mod terminal;
 mod video;
 
 use stivale_boot::v2::{StivaleFramebufferHeaderTag, StivaleHeader, StivaleStruct};
 
-use crate::video::{ColorRGB, FRAMEBUFFER};
+use crate::terminal::Terminal;
 
 extern "C" {
     static KERNEL_STACK_TOP: u8;
@@ -42,18 +44,25 @@ pub extern "C" fn kernel_main(stivale_struct: &'static StivaleStruct) -> ! {
     interrupts::init();
     kprintln!("OK");
 
-    /* Placeholder code just to see if we get here. */
-    {
-        let mut framebuffer = FRAMEBUFFER.lock();
-        for y in 0..framebuffer.height {
-            for x in 0..framebuffer.width {
-                let r = x * 255 / framebuffer.width;
-                let g = y * 255 / framebuffer.height;
-                framebuffer.put_pixel(x, y, ColorRGB(r as u8, g as u8, 200));
-            }
-        }
+    let modules = stivale_struct.modules().unwrap();
+    kprintln!("[KERNEL] Modules loaded:");
+    for (i, module) in modules.iter().enumerate() {
+        kprintln!("  {}. {}", i + 1, module.as_str());
     }
-    /* --- */
+
+    let mut terminal = {
+        let font_module = &modules.as_slice()[0];
+        let start_addr = font_module.start as *const u8;
+        let len = (font_module.end - font_module.start) as usize;
+        let data = unsafe { core::slice::from_raw_parts(start_addr, len) };
+        let font = psf::Font::try_from_slice(data).expect("invalid psf data");
+        Terminal::new(font)
+    };
+
+    for i in 0..100 {
+        use core::fmt::Write;
+        write!(terminal, "{i} ").unwrap();
+    }
 
     loop {
         x86_64::instructions::hlt();

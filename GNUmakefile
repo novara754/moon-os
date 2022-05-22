@@ -1,6 +1,7 @@
 QEMU_ARGS=-M q35 -m 2G -boot d -serial stdio -no-reboot
 KERNEL_LIB=target/x86_64-moon_os/debug/libmoon_os.a
 KERNEL=target/x86_64-moon_os/debug/moon_os
+TERMINAL_FONT=./terminal-font.psf
 ISO=moon_os.iso
 
 .PHONY: all
@@ -34,10 +35,11 @@ kernel:
 		$(KERNEL_LIB) \
 		src/stack.o
 
-$(ISO): limine kernel
+$(ISO): limine kernel $(TERMINAL_FONT)
 	rm -rf iso_root
 	mkdir -p iso_root
 	cp $(KERNEL) \
+		$(TERMINAL_FONT) \
 		limine.cfg limine/limine.sys limine/limine-cd.bin limine/limine-cd-efi.bin iso_root/
 	xorriso -as mkisofs -b limine-cd.bin \
 		-no-emul-boot -boot-load-size 4 -boot-info-table \
