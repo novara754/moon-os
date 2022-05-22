@@ -56,7 +56,7 @@ pub extern "C" fn kernel_main(stivale_struct: &'static StivaleStruct) -> ! {
     /* --- */
 
     loop {
-        unsafe { core::arch::asm!("hlt") }
+        x86_64::instructions::hlt();
     }
 }
 
@@ -65,7 +65,7 @@ fn panic(info: &core::panic::PanicInfo) -> ! {
     kprintln!("{}", info);
 
     loop {
-        unsafe { core::arch::asm!("hlt") }
+        x86_64::instructions::hlt();
     }
 }
 
