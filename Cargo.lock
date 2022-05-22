@@ -44,8 +44,19 @@ name = "moon_os"
 version = "0.1.0"
 dependencies = [
  "lazy_static",
+ "pic8259",
  "spin 0.9.3",
  "stivale-boot",
+ "uart_16550",
+ "x86_64",
+]
+
+[[package]]
+name = "pic8259"
+version = "0.10.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "24ec21f514e2e16e94649f1d041ca4a7069b512c037ac156360652a775e6229d"
+dependencies = [
  "x86_64",
 ]
 
@@ -83,6 +94,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3984cf9eb06b3115126ca13dffce8e45bc0f9a444391467c814b086acf50836d"
 dependencies = [
  "bitflags",
+]
+
+[[package]]
+name = "uart_16550"
+version = "0.2.18"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b074eb9300ad949edd74c529c0e8d451625af71bb948e6b65fe69f72dc1363d9"
+dependencies = [
+ "bitflags",
+ "rustversion",
+ "x86_64",
 ]
 
 [[package]]

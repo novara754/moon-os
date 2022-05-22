@@ -1,13 +1,14 @@
+# Dist
 limine
 ovmf-x64
-kernel/stivale2.h
+
+# Build artifacts
+/target
 *.elf
 *.iso
 *.hdd
 *.o
 *.d
 
-
-# Added by cargo
-
-/target
+# Logs
+serial.log

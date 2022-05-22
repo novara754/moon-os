@@ -3,7 +3,7 @@
 #![feature(abi_x86_interrupt)]
 
 mod gdt;
-mod idt;
+mod interrupts;
 mod serial;
 mod video;
 
@@ -39,7 +39,7 @@ pub extern "C" fn kernel_main(stivale_struct: &'static StivaleStruct) -> ! {
     kprintln!("OK");
 
     kprint!("[KERNEL] Initializing IDT...");
-    idt::init();
+    interrupts::init();
     kprintln!("OK");
 
     /* Placeholder code just to see if we get here. */
