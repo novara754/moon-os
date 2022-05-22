@@ -4,6 +4,7 @@
 
 mod gdt;
 mod interrupts;
+mod keyboard;
 mod module;
 mod psf;
 mod serial;
@@ -12,7 +13,7 @@ mod video;
 
 use stivale_boot::v2::{StivaleFramebufferHeaderTag, StivaleHeader, StivaleStruct};
 
-use crate::terminal::Terminal;
+use crate::{keyboard::KEYBOARD, terminal::Terminal};
 
 extern "C" {
     static KERNEL_STACK_TOP: u8;
@@ -64,14 +65,13 @@ pub extern "C" fn kernel_main(stivale_struct: &'static StivaleStruct) -> ! {
         Terminal::new(font)
     };
 
-    for i in 0..100 {
-        use core::fmt::Write;
-        write!(terminal, "{i} ").unwrap();
+    loop {
+        terminal.write_byte(unsafe { KEYBOARD.get_key().as_ascii() });
     }
 
-    loop {
-        x86_64::instructions::hlt();
-    }
+    // loop {
+    //     x86_64::instructions::hlt();
+    // }
 }
 
 #[panic_handler]

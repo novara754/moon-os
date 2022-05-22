@@ -24,3 +24,4 @@ spin = "0.9.1"
 x86_64 = "0.14.9"
 pic8259 = "0.10.2"
 uart_16550 = "0.2.18"
+circbuf = { git = "https://github.com/vzwGrey/circbuf-rs", rev = "8a4d7d5" }

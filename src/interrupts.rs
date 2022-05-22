@@ -6,7 +6,7 @@ use x86_64::{
     structures::idt::{InterruptDescriptorTable, InterruptStackFrame, PageFaultErrorCode},
 };
 
-use crate::{gdt, kprintln};
+use crate::{gdt, keyboard::KEYBOARD, kprintln};
 
 pub const PIC_1_OFFSET: u8 = 32;
 pub const PIC_2_OFFSET: u8 = PIC_1_OFFSET + 8;
@@ -78,7 +78,9 @@ extern "x86-interrupt" fn keyboard_interrupt_handler(_stack_frame: InterruptStac
     let status = unsafe { status_port.read() };
     if status & 0x01 != 0 {
         let keycode = unsafe { data_port.read() };
-        kprintln!("keycode: {:X}", keycode);
+        unsafe {
+            KEYBOARD.push_keycode(keycode);
+        }
     }
 
     unsafe {

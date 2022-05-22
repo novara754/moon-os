@@ -28,15 +28,19 @@ impl Terminal {
 
     pub fn write(&mut self, s: &str) {
         for b in s.bytes() {
-            match b {
-                b'\n' => self.next_line(),
-                b if !b.is_ascii_control() => self.write_byte(b),
-                _ => self.write_byte(0),
-            }
+            self.write_byte(b)
         }
     }
 
-    fn write_byte(&mut self, b: u8) {
+    pub fn write_byte(&mut self, b: u8) {
+        match b {
+            b'\n' => self.next_line(),
+            b if !b.is_ascii_control() => self.write_byte_raw(b),
+            _ => self.write_byte_raw(0),
+        }
+    }
+
+    fn write_byte_raw(&mut self, b: u8) {
         let mut framebuffer = FRAMEBUFFER.lock();
         let glyph = self.font.get_nth_glyph(b as usize);
         for (dy, row) in glyph.0.iter().enumerate() {
