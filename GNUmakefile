@@ -1,6 +1,12 @@
+KERNEL_DIR=debug
+ifdef RELEASE_MODE
+	CARGO_ARGS=--release
+	KERNEL_DIR=release
+endif
+
 QEMU_ARGS=-M q35 -m 2G -boot d -serial stdio -no-reboot
-KERNEL_LIB=target/x86_64-moon_os/debug/libmoon_os.a
-KERNEL=target/x86_64-moon_os/debug/moon_os
+KERNEL_LIB=target/x86_64-moon_os/$(KERNEL_DIR)/libmoon_os.a
+KERNEL=target/x86_64-moon_os/$(KERNEL_DIR)/moon_os
 TERMINAL_FONT=./terminal-font.psf
 ISO=moon_os.iso
 
@@ -24,7 +30,7 @@ limine:
 
 .PHONY: kernel
 kernel:
-	cargo build
+	cargo build $(CARGO_ARGS)
 	nasm -f elf64 -o src/stack.o src/stack.s
 	ld \
 		-Tlinker.ld \
