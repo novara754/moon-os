@@ -53,7 +53,8 @@ impl Framebuffer {
         self.data[byte_idx..][..self.bytes_per_pixel].copy_from_slice(&color.to_bgra());
     }
 
-    pub fn draw_rect(&mut self, x: usize, y: usize, w: usize, h: usize, color: ColorRGB) {
+    // TODO: Remove this maybe?
+    pub fn _draw_rect(&mut self, x: usize, y: usize, w: usize, h: usize, color: ColorRGB) {
         for dy in y..(y + h) {
             for dx in x..(x + w) {
                 self.put_pixel(dx, dy, color);
