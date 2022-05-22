@@ -1,7 +1,7 @@
 use lazy_static::lazy_static;
 use x86_64::{
     instructions::tables::load_tss,
-    registers::segmentation::{Segment, SegmentSelector, CS},
+    registers::segmentation::SegmentSelector,
     structures::{
         gdt::{Descriptor, GlobalDescriptorTable},
         tss::TaskStateSegment,
