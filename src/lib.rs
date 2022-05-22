@@ -4,6 +4,7 @@
 
 mod gdt;
 mod interrupts;
+mod module;
 mod psf;
 mod serial;
 mod terminal;
@@ -51,10 +52,14 @@ pub extern "C" fn kernel_main(stivale_struct: &'static StivaleStruct) -> ! {
     }
 
     let mut terminal = {
+        use module::KernelModule;
         let font_module = &modules.as_slice()[0];
-        let start_addr = font_module.start as *const u8;
-        let len = (font_module.end - font_module.start) as usize;
-        let data = unsafe { core::slice::from_raw_parts(start_addr, len) };
+        assert_eq!(
+            font_module.as_str(),
+            "TERMINAL_FONT",
+            "expected terminal font to be first kernel module"
+        );
+        let data = font_module.data();
         let font = psf::Font::try_from_slice(data).expect("invalid psf data");
         Terminal::new(font)
     };
