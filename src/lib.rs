@@ -6,6 +6,7 @@ mod gdt;
 mod interrupts;
 mod keyboard;
 mod module;
+mod mouse;
 mod psf;
 mod serial;
 mod terminal;
@@ -65,13 +66,19 @@ pub extern "C" fn kernel_main(stivale_struct: &'static StivaleStruct) -> ! {
         Terminal::new(font)
     };
 
-    loop {
-        terminal.write_byte(unsafe { KEYBOARD.get_key().as_ascii() });
-    }
+    terminal.write("hello, world!");
+
+    kprint!("[KERNEL] Initializing PS2 mouse...");
+    mouse::init();
+    kprintln!("OK");
 
     // loop {
-    //     x86_64::instructions::hlt();
+    //     terminal.write_byte(unsafe { KEYBOARD.get_key().as_ascii() });
     // }
+
+    loop {
+        x86_64::instructions::hlt();
+    }
 }
 
 #[panic_handler]

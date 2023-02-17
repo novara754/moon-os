@@ -2,11 +2,11 @@ use lazy_static::lazy_static;
 use pic8259::ChainedPics;
 use spin::Mutex;
 use x86_64::{
-    instructions::port::Port,
+    instructions::port::{Port, PortReadOnly},
     structures::idt::{InterruptDescriptorTable, InterruptStackFrame, PageFaultErrorCode},
 };
 
-use crate::{gdt, keyboard::KEYBOARD, kprintln};
+use crate::{gdt, keyboard::KEYBOARD, kprintln, mouse::MOUSE};
 
 pub const PIC_1_OFFSET: u8 = 32;
 pub const PIC_2_OFFSET: u8 = PIC_1_OFFSET + 8;
@@ -27,6 +27,7 @@ lazy_static! {
         idt.page_fault.set_handler_fn(page_fault_handler);
 
         idt[InterruptIndex::Keyboard as usize].set_handler_fn(keyboard_interrupt_handler);
+        idt[InterruptIndex::Mouse as usize].set_handler_fn(mouse_interrupt_handler);
 
         idt
     };
@@ -36,6 +37,7 @@ lazy_static! {
 #[repr(u8)]
 pub enum InterruptIndex {
     Keyboard = PIC_1_OFFSET + 1,
+    Mouse = PIC_2_OFFSET + 4,
 }
 
 pub fn init() {
@@ -44,8 +46,12 @@ pub fn init() {
         let mut pics = PICS.lock();
         pics.initialize();
 
-        let [mask1, mask2] = pics.read_masks();
-        pics.write_masks(mask1 & !(1 << 1), mask2);
+        let [mut mask1, mut mask2] = pics.read_masks();
+
+        // mask1 &= !(1 << 1);
+        mask2 = 0;
+
+        pics.write_masks(mask1, mask2);
     }
     x86_64::instructions::interrupts::enable();
 }
@@ -86,5 +92,16 @@ extern "x86-interrupt" fn keyboard_interrupt_handler(_stack_frame: InterruptStac
     unsafe {
         PICS.lock()
             .notify_end_of_interrupt(InterruptIndex::Keyboard as u8);
+    }
+}
+
+extern "x86-interrupt" fn mouse_interrupt_handler(_stack_frame: InterruptStackFrame) {
+    let mut port = PortReadOnly::new(0x60);
+    let packet = unsafe { port.read() };
+    MOUSE.lock().process_packet(packet);
+
+    unsafe {
+        PICS.lock()
+            .notify_end_of_interrupt(InterruptIndex::Mouse as u8);
     }
 }

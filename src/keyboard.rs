@@ -127,7 +127,7 @@ impl Key {
         match self {
             Character(c) => c,
             Enter => b'\n',
-            _ => panic!(),
+            _ => panic!("tried to convert Key::{:?} to ascii", self),
         }
     }
 }
